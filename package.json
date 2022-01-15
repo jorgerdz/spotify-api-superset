@@ -1,0 +1,23 @@
+{
+  "name": "spotify-api-superset",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jorgerdz/spotify-api-superset.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/jorgerdz/spotify-api-superset/issues"
+  },
+  "dependencies": {
+    "spotify-web-api-node": "*",
+    "http": "*"
+  },
+  "homepage": "https://github.com/jorgerdz/spotify-api-superset#readme"
+}
