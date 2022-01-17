@@ -16,8 +16,10 @@
     "url": "https://github.com/jorgerdz/spotify-api-superset/issues"
   },
   "dependencies": {
-    "spotify-web-api-node": "*",
-    "http": "*"
+    "express": "^4.17.2",
+    "http": "*",
+    "open": "^8.4.0",
+    "spotify-web-api-node": "*"
   },
   "homepage": "https://github.com/jorgerdz/spotify-api-superset#readme"
 }
