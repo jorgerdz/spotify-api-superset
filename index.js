@@ -2,6 +2,8 @@ let http = require("http");
 let fs = require("fs");
 let spotify = require('./src/spotify_wrapper');
 let express = require("express");
+let sequence = require("./src/utils").sequence;
+let helpers = require('./src/spotify-superset')
 let s;
 let app = express()
 let port = 80;
@@ -30,21 +32,12 @@ async function retrieveAllPlaylistsTracks(playlists) {
     return allTracks;
 }
 
-async function sequence(promiseFactories) {
-    let responses = [];
-    for (let job of promiseFactories) {
-        responses.push(await job());
-    }
-    return responses;
-}
-
 function getTracksBuilder(playlist) {
     return () => {
         return new Promise(function (resolve, reject) {
             console.log("getting tracks " + playlist.name);
             s.getPlaylistTracks(playlist.id)
                 .then(function (result) {
-                    //console.log(result.body);
                     resolve(
                         result.body.items.map((track) => {
                             track.playlist = playlist.name;
@@ -99,7 +92,6 @@ function getMatchingPlaylistByRegex(user, regex) {
     };
     retrieveAllPlaylists(user)
         .then(function (playlists) {
-            console.log('ei')
             let filtered = playlists.filter(filter);
             //fs.writeFileSync("playlists.json", JSON.stringify(filtered));
             retrieveAllPlaylistsTracks(filtered).then((results) => {
@@ -123,38 +115,16 @@ function getMatchingPlaylistByRegex(user, regex) {
         });
 }
 
-function retrieveAllPlaylists(user) {
-    return new Promise(function (resolve, reject) {
-        let promises = allPagesBuilder("getUserPlaylists");
-        Promise.all(promises)
-            .then(function (responses) {
-                let playlists = responses
-                    .map((result) => result.body)
-                    .reduce((prev, curr) => prev.concat(curr.items), []);
-                resolve(playlists);
-            })
-            .catch(reject);
-    });
-}
-
-function allPagesBuilder(method, user) {
-    var promises = [];
-    var total = 832;
-    for (let i = 0; i < total; i += 20) {
-        let buildPromise = pageBuilder(method, user, i);
-        promises.push(buildPromise);
-    }
-    return promises;
-}
-
-function pageBuilder(method, user, offset) {
-    return s[method](user, {
-        limit: 20,
-        offset: offset
-    });
-}
 
 async function run() {
     s = await spotify.getClient();
-    getMatchingPlaylistByRegex("dolmenrage", /(?!Wilco).*\d+\/\d+/);
+    let playlists = await helpers.runner(s, 'getUserPlaylists', 'dolmenrage')
+    playlists = playlists.filter((p) => p.name.match(/(?!Wilco).*\d+\/\d+/))
+    let tracks;
+    for (p in playlists) {
+        tracks = await helpers.runner(s, 'getPlaylistTracks', playlists[p].id);
+        playlists[p].tracks = tracks;
+    }
+    fs.writeFileSync("playlists.json", JSON.stringify(playlists));
+    console.log('finished')
 }
