@@ -1,12 +1,13 @@
 let SpotifyWebApi = require("spotify-web-api-node");
 let fs = require("fs");
 let open = require("open");
-
 let options = {
     clientId: "39e538b4a8ec4f5084739f1fde45b860",
     clientSecret: "c9d99ee2ad59415cab780f2a58d24fcb",
+    // this needs to be configured to work on local
     redirectUri: "http://spotify-wrapper.com"
 }
+const SCOPES = ['playlist-read-private', 'user-library-modify', 'playlist-modify-private', 'playlist-modify-public']
 let spotify = new SpotifyWebApi(options);
 let promiseResolve, promiseReject;
 let authPromise = new Promise(function(resolve, reject){
@@ -46,11 +47,11 @@ async function getClient() {
 }
 
 function requestToken() {
-    let scopes =  ['playlist-read-private']
-    let authorizeURL = spotify.createAuthorizeURL(scopes, 'authorizing');
+    let authorizeURL = spotify.createAuthorizeURL(SCOPES, 'authorizing');
     open(authorizeURL);
     return;
 }
 
 exports.getClient = getClient;
 exports.setCode = setCode;
+exports.client = spotify;
